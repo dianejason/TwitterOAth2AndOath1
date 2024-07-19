@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.34916.146
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TwitterApi", "TwitterApi\TwitterApi.csproj", "{198F72A3-B971-43F6-85DE-658A10597F55}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TwitterApiSdk", "TwitterApiSdk\TwitterApiSdk.csproj", "{5A94E036-697B-4625-B819-75D6283610CC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{198F72A3-B971-43F6-85DE-658A10597F55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{198F72A3-B971-43F6-85DE-658A10597F55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{198F72A3-B971-43F6-85DE-658A10597F55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{198F72A3-B971-43F6-85DE-658A10597F55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A94E036-697B-4625-B819-75D6283610CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A94E036-697B-4625-B819-75D6283610CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A94E036-697B-4625-B819-75D6283610CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A94E036-697B-4625-B819-75D6283610CC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {72ACA219-C69D-4B5D-B916-A60396D7EB30}
+	EndGlobalSection
+EndGlobal
