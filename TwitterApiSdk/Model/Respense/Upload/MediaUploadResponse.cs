@@ -20,12 +20,12 @@ namespace TwitterApiSdk.Model.Respense.Upload
         public int h { get; set; }
     }
 
-    public class MediaUploadResponse
+    public class MediaUploadResponse : ErrorBase
     {
         /// <summary>
         /// 
         /// </summary>
-        public int media_id { get; set; }
+        public long media_id { get; set; }
         /// <summary>
         /// 
         /// </summary>

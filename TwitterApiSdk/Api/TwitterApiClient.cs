@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -10,6 +11,7 @@ using Samm.OpenApi.Adapter;
 using Samm.OpenApi.Adapter.Http;
 using TwitterApiSdk.Model.Config;
 using TwitterApiSdk.Model.Respense;
+using TwitterApiSdk.Model.Respense.TimeLine;
 
 namespace TwitterApiSdk.Api
 {
@@ -100,7 +102,7 @@ namespace TwitterApiSdk.Api
         {
             apiParameter.AddToHeader("Authorization", "Bearer " + accessToken);
         }
-        public async Task<UserV2Response> GetCurrentUserV2(string accessToken, HashSet<string> userFields = null, HashSet<string> tweetFields = null, HashSet<string> expansions = null)
+        public async Task<UserV2Response> GetUserInfoV2(string accessToken, HashSet<string> userFields = null, HashSet<string> tweetFields = null, HashSet<string> expansions = null)
         {
             if (userFields == null)
             {
@@ -162,13 +164,14 @@ namespace TwitterApiSdk.Api
             }
         }
 
-        public async Task<TwitterResponse<TextCreateResponseData>> CreateTextV2(string accessToken, string text)
+        public async Task<TwitterResponse<TextCreateResponseData>> CreateTextV2(string accessToken, string accessTokenSecret, string text)
         {
             ArgumentCheck.Begin().NotNull(accessToken, "accessToken");
             ArgumentCheck.Begin().NotNull(text, "text");
             _httpClient.SetApiInfo(ConstRouter.TweetsV2, HttpMethod.Post);
+            var url = $"{_twitterApiOptions.ApiHost}{ConstRouter.TweetsV2}";
             var apiParameter = new ApiParameter();
-            AddAuthorization(apiParameter, accessToken);
+            SetAuthorizationV1(apiParameter, "Post", url, accessToken, accessTokenSecret);
             apiParameter.SetBody(new { text });
 
             var result = await _httpClient.SendAsync(apiParameter);
@@ -182,14 +185,14 @@ namespace TwitterApiSdk.Api
             }
         }
 
-        public async Task<dynamic> DeleteMediaV2(string accessToken, string id)
+        public async Task<dynamic> DeleteMediaV2(string accessToken, string accessTokenSecret, string id)
         {
             ArgumentCheck.Begin().NotNull(accessToken, "accessToken");
             ArgumentCheck.Begin().NotNull(id, "id");
             _httpClient.SetApiInfo($"{ConstRouter.TweetsV2}/{id}", HttpMethod.Delete);
             var apiParameter = new ApiParameter();
-            AddAuthorization(apiParameter, accessToken);
-
+            var url = $"{_twitterApiOptions.ApiHost}{ConstRouter.TweetsV2}/{id}";
+            SetAuthorizationV1(apiParameter, "Delete", url, accessToken, accessTokenSecret);
             var result = await _httpClient.SendAsync(apiParameter);
             if (result.IsSuccess)
             {
@@ -201,7 +204,7 @@ namespace TwitterApiSdk.Api
             }
         }
 
-        public async Task<TwitterResponse<TextCreateResponseData>> CreateMediaV2(string accessToken, string text, params string[] mediaIds)
+        public async Task<TwitterResponse<TextCreateResponseData>> CreateMediaV2(string accessToken, string accessTokenSecret, string text, params string[] mediaIds)
         {
             ArgumentCheck.Begin().NotNull(accessToken, "accessToken");
             ArgumentCheck.Begin().NotNull(text, "text");
@@ -210,7 +213,9 @@ namespace TwitterApiSdk.Api
             ArgumentCheck.Begin().IsGreaterThan(mediaIds.Length, "mediaIds", 0);
             _httpClient.SetApiInfo($"{ConstRouter.TweetsV2}", HttpMethod.Post);
             var apiParameter = new ApiParameter();
-            AddAuthorization(apiParameter, accessToken);
+            var url = $"{_twitterApiOptions.ApiHost}{ConstRouter.TweetsV2}";
+            var oAuthHeader = OAuthHelper.GenerateOAuthHeader("POST", url, _twitterApiOptions.ApiKey, _twitterApiOptions.ApiKeySecret, accessToken, accessTokenSecret);
+            AddAuthorizationV1(apiParameter, oAuthHeader);
 
             apiParameter.SetBody(new
             {
@@ -227,7 +232,7 @@ namespace TwitterApiSdk.Api
             }
             else
             {
-                return null;
+                return new TwitterResponse<TextCreateResponseData>() { data = new TextCreateResponseData() { ErrorJsonString = result.Message } };
             }
 
 
@@ -236,6 +241,11 @@ namespace TwitterApiSdk.Api
         private void AddAuthorizationV1(ApiParameter apiParameter, string accessToken)
         {
             apiParameter.AddToHeader("Authorization", accessToken);
+        }
+        private void SetAuthorizationV1(ApiParameter apiParameter, string httpMethod, string url, string accessToken, string accessTokenSecret, Dictionary<string, string> additionalParams = null)
+        {
+            var oAuthHeader = OAuthHelper.GenerateOAuthHeader(httpMethod, url, _twitterApiOptions.ApiKey, _twitterApiOptions.ApiKeySecret, accessToken, accessTokenSecret, additionalParams);
+            apiParameter.AddToHeader("Authorization", oAuthHeader);
         }
 
         public async Task<string> GetRequestToken()
@@ -293,6 +303,198 @@ namespace TwitterApiSdk.Api
             {
                 return null;
             }
+        }
+
+        [Description("This interface is not available for free accounts")]
+        public async Task<dynamic> GetUserInfoV1(string accessToken, string accessTokenSecret, params string[] userIds)
+        {
+            var url = "https://api.twitter.com/1.1/users/lookup.json";
+            var queryParams = new Dictionary<string, string>
+        {
+            { "user_id", string.Join(",", userIds) }
+        };
+            var queryString = string.Join("&", queryParams.Select(kvp => $"{kvp.Key}={Uri.EscapeDataString(kvp.Value)}"));
+            var fullUrl = $"{url}?{queryString}";
+            var oAuthHeader = OAuthHelper.GenerateOAuthHeader("GET", url, _twitterApiOptions.ApiKey, _twitterApiOptions.ApiKeySecret, accessToken, accessTokenSecret, queryParams);
+            _httpClient.SetApiInfo($"{ConstRouter.UserLookupV1}?{queryString}", HttpMethod.Get);
+            var apiParameter = new ApiParameter();
+            AddAuthorizationV1(apiParameter, oAuthHeader);
+            var result = await _httpClient.SendAsync(apiParameter);
+            if (result.IsSuccess)
+            {
+                return result.Data;
+            }
+            else
+            {
+                return null;
+            }
+
+        }
+
+        public async Task<UserV2Response> GetUserInfoV2(string accessToken, string accessTokenSecret, HashSet<string> userFields = null, HashSet<string> tweetFields = null, HashSet<string> expansions = null)
+        {
+            ArgumentCheck.Begin().NotNull(accessToken, "requestToken");
+            ArgumentCheck.Begin().NotNull(accessTokenSecret, "accessTokenSecret");
+
+            var url = "https://api.twitter.com/2/users/me";
+            if (userFields == null)
+            {
+                userFields = UserResponseFields.User.ALL;
+            }
+            var queryParams = new Dictionary<string, string>
+        {
+            { "user.fields", string.Join(",", userFields) }
+        };
+            if (tweetFields != null && tweetFields.Any())
+            {
+                queryParams.Add("tweet.fields", string.Join(",", tweetFields));
+            }
+            if (expansions != null && expansions.Any())
+            {
+                queryParams.Add("tweet.fields", string.Join(",", tweetFields));
+            }
+            var oAuthHeader = OAuthHelper.GenerateOAuthHeader("GET", url, _twitterApiOptions.ApiKey, _twitterApiOptions.ApiKeySecret, accessToken, accessTokenSecret, queryParams);
+            var queryString = string.Join("&", queryParams.Select(kvp => $"{kvp.Key}={Uri.EscapeDataString(kvp.Value)}"));
+            _httpClient.SetApiInfo($"{ConstRouter.MeV2}?{queryString}", HttpMethod.Get);
+            var apiParameter = new ApiParameter();
+            AddAuthorizationV1(apiParameter, oAuthHeader);
+
+            var result = await _httpClient.SendAsync(apiParameter);
+            if (result.IsSuccess)
+            {
+                return JsonExpands.ToObj<UserV2Response>(result.Data);
+            }
+            else
+            {
+                throw new Exception(result.Data);
+            }
+        }
+
+        [Description("This interface is not available for free accounts")]
+        public async Task<dynamic> TimeLineV2(string accessToken, string userId, string maxResults, string paginationToken = null, string startTime = null, string endTime = null, string sinceId = null, string untilId = null, HashSet<string> expansions = null, HashSet<string> tweetFields = null, HashSet<string> userFields = null, HashSet<string> mediaFields = null, HashSet<string> placeFields = null, HashSet<string> pollFields = null)
+        {
+            ArgumentCheck.Begin().NotNull(accessToken, "requestToken");
+
+            var url = $"https://api.twitter.com/2/users/{userId}/tweets";
+            if (expansions == null)
+            {
+                expansions = new HashSet<string>();
+            }
+            if (userFields == null)
+            {
+                userFields = UserResponseFields.User.ALL;
+                expansions.Add("author_id");
+                expansions.Add("entities.mentions.username");
+                expansions.Add("in_reply_to_user_id");
+                expansions.Add("referenced_tweets.id.author_id");
+            }
+            if (mediaFields == null)
+            {
+                mediaFields = TimeLineResponseFields.Media.ALL;
+            }
+
+            var queryParams = new Dictionary<string, string>
+        {
+                {"max_results",maxResults },
+        };
+            if (paginationToken != null)
+            {
+                queryParams.Add("pagination_token", paginationToken);
+            }
+            if (startTime != null)
+            {
+                queryParams.Add("start_time", startTime);
+            }
+            if (endTime != null)
+            {
+                queryParams.Add("end_time", endTime);
+            }
+            if (sinceId != null)
+            {
+                queryParams.Add("since_id", sinceId);
+            }
+            if (untilId != null)
+            {
+                queryParams.Add("until_id", untilId);
+            }
+            if (tweetFields != null)
+            {
+                queryParams.Add("tweet.fields", string.Join(",", tweetFields));
+                expansions.Add("referenced_tweets.id");
+            }
+            if (userFields != null)
+            {
+                queryParams.Add("user.fields", string.Join(",", userFields));
+            }
+            if (mediaFields != null)
+            {
+                queryParams.Add("media.fields", string.Join(",", mediaFields));
+                expansions.Add("attachments.media_keys");
+            }
+            if (placeFields != null)
+            {
+                queryParams.Add("place.fields", string.Join(",", placeFields));
+                expansions.Add("geo.place_id");
+            }
+            if (pollFields != null)
+            {
+                queryParams.Add("poll.fields", string.Join(",", pollFields));
+                expansions.Add("attachments.poll_ids");
+            }
+            if (expansions != null && expansions.Count > 0)
+            {
+                queryParams.Add("expansions", string.Join(",", expansions));
+            }
+
+            var queryString = string.Join("&", queryParams.Select(kvp => $"{kvp.Key}={Uri.EscapeDataString(kvp.Value)}"));
+
+            _httpClient.SetApiInfo($"/2/users/{userId}/tweets?{queryString}", HttpMethod.Get);
+            var apiParameter = new ApiParameter();
+            AddAuthorization(apiParameter, accessToken);
+
+            var result = await _httpClient.SendAsync(apiParameter);
+            if (result.IsSuccess)
+            {
+                return JsonExpands.ToObj<dynamic>(result.Data);
+            }
+            else
+            {
+                throw new Exception(result.Data);
+            }
+
+        }
+        [Description("This interface is not available for free accounts")]
+        public async Task<dynamic> TimeLineV1(string accessToken, string accessTokenSecret, string userId, string count, string includeRts = "0", string excludeReplies = "1")
+        {
+            ArgumentCheck.Begin().NotNull(accessToken, "requestToken");
+            ArgumentCheck.Begin().NotNull(accessTokenSecret, "accessTokenSecret");
+
+            var url = $"https://api.twitter.com/1.1/statuses/user_timeline.json";
+
+            var queryParams = new Dictionary<string, string>
+        {
+                {"user_id",userId },
+                {"count",count },
+                {"include_rts",includeRts },
+                {"exclude_replies",excludeReplies },
+        };
+
+            var queryString = string.Join("&", queryParams.Select(kvp => $"{kvp.Key}={Uri.EscapeDataString(kvp.Value)}"));
+
+            _httpClient.SetApiInfo($"/1.1/statuses/user_timeline.json?{queryString}", HttpMethod.Get);
+            var apiParameter = new ApiParameter();
+            SetAuthorizationV1(apiParameter, "Get", url, accessToken, accessTokenSecret, queryParams);
+
+            var result = await _httpClient.SendAsync(apiParameter);
+            if (result.IsSuccess)
+            {
+                return JsonExpands.ToObj<dynamic>(result.Data);
+            }
+            else
+            {
+                throw new Exception(result.Data);
+            }
+
         }
     }
 }

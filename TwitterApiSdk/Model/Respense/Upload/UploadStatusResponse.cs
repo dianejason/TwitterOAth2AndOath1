@@ -29,7 +29,7 @@ namespace TwitterApiSdk.Model.Respense.Upload
         /// <summary>
         /// 
         /// </summary>
-        public int media_id { get; set; }
+        public long media_id { get; set; }
         /// <summary>
         /// 
         /// </summary>

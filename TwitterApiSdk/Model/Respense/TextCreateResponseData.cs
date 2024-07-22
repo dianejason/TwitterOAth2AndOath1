@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TwitterApiSdk.Model.Respense
 {
-    public class TextCreateResponseData
+    public class TextCreateResponseData : ErrorBase
     {
         /// <summary>
         /// 

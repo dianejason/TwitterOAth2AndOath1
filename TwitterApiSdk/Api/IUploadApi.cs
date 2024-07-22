@@ -14,7 +14,7 @@ namespace TwitterApiSdk.Api
         /// <param name="byteFile"></param>
         /// <param name="mediaFileType"></param>
         /// <returns></returns>
-        Task<MediaUploadResponse> UploadMedia(string accessToken, byte[] byteFile, UploadMediaFileType mediaFileType);
+        Task<MediaUploadResponse> UploadMedia(string accessToken, string accessTokenSecret, byte[] byteFile, string mimeType, UploadMediaFileType mediaFileType);
         Task<string> GetMimeType(string networkFileUrl);
         /// <summary>
         /// 视频格式：文件大小不得超过 512 MB
@@ -24,10 +24,10 @@ namespace TwitterApiSdk.Api
         /// <param name="mimeType"></param>
         /// <param name="mediaFileType"></param>
         /// <returns></returns>
-        Task<MediaUploadResponse> InitUpload(string accessToken, long byteSize, string mimeType, UploadMediaFileType mediaFileType);
-        Task<bool> AppendUplaod(string accessToken, string mediaId, byte[] part, int index);
-        Task<dynamic> FinalizeUplaod(string accessToken, string mediaId);
-        Task<UploadStatusResponse> UploadStatus(string accessToken, string mediaId);
+        Task<MediaUploadResponse> InitUpload(string accessToken, string accessTokenSecret, long byteSize, string mimeType, UploadMediaFileType mediaFileType);
+        Task<bool> AppendUplaod(string accessToken, string accessTokenSecret, string mediaId, byte[] part, int index);
+        Task<UploadFinalizeResponse> FinalizeUplaod(string accessToken, string accessTokenSecret, string mediaId);
+        Task<UploadStatusResponse> UploadStatus(string accessToken, string accessTokenSecret, string mediaId);
 
     }
 }
