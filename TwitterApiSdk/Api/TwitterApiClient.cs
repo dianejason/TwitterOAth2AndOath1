@@ -496,5 +496,10 @@ namespace TwitterApiSdk.Api
             }
 
         }
+
+        public void SetProxy()
+        {
+            _httpClient.SetProxy(_twitterApiOptions.ProxyServerUrl);
+        }
     }
 }

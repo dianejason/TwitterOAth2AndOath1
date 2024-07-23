@@ -23,5 +23,6 @@ namespace TwitterApiSdk.Api
         Task<UserV2Response> GetUserInfoV2(string accessToken, string accessTokenSecret, HashSet<string> userFields = null, HashSet<string> tweetFields = null, HashSet<string> expansions = null);
         Task<dynamic> TimeLineV2(string accessToken, string userId, string maxResults, string paginationToken = null, string startTime = null, string endTime = null, string sinceId = null, string untilId = null, HashSet<string> expansions = null, HashSet<string> tweetFields = null, HashSet<string> userFields = null, HashSet<string> mediaFields = null, HashSet<string> placeFields = null, HashSet<string> pollFields = null);
         Task<dynamic> TimeLineV1(string accessToken, string accessTokenSecret, string userId, string count, string includeRts = "0", string excludeReplies = "1");
+        void SetProxy();
     }
 }
