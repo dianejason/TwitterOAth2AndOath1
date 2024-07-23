@@ -2,10 +2,32 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>TwitterApiSdk</Title>
+    <Authors>jason</Authors>
+    <Company>siluzan</Company>
+    <Description>This is a class library based on the Twitter oath 2.0 and oath 1.0 licenses that also supports posting text, images, videos</Description>
+    <Copyright>siluzan</Copyright>
+    <PackageProjectUrl>https://github.com/dianejason/TwitterOAth2AndOath1</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/dianejason/TwitterOAth2AndOath1</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReleaseNotes>This is a class library based on the Twitter oath 2.0 and oath 1.0 licenses that also supports posting text, images, videos</PackageReleaseNotes>
+    <PackageTags>TwitterApi</PackageTags>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageReadmeFile>TwitterApiSdk.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Samm.OpenApi.Adapter" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="TwitterApiSdk.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
