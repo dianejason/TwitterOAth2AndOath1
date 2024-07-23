@@ -1,5 +1,4 @@
 using Samm.OpenApi.Adapter.Http;
-using Tweetinvi;
 using TwitterApiSdk;
 using TwitterApiSdk.Api;
 
@@ -35,21 +34,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
-static void Test()
-{
-
-    // 设置Twitter API的认证信息
-    var consumerKey = "YOUR_CONSUMER_KEY";
-    var consumerSecret = "YOUR_CONSUMER_SECRET";
-    var accessToken = "YOUR_ACCESS_TOKEN";
-    var accessTokenSecret = "YOUR_ACCESS_TOKEN_SECRET";
-
-    // 进行认证
-    var userClient = new TwitterClient(consumerKey, consumerSecret, accessToken, accessTokenSecret);
-
-    // 发布一条推文
-    var tweet = userClient.Tweets.PublishTweetAsync("Hello, Twitter! This is a tweet from my C# application.").Result;
-
-    userClient.Auth.CreateBearerTokenAsync();
-}

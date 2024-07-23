@@ -19,7 +19,7 @@ namespace TwitterApi.Controllers
             this.httpClientFactory = httpClientFactory;
         }
 
-        [HttpGet("GetAutheticationUrl")]
+        [HttpGet("GetAutheticationUrlV2")]
         public IActionResult GetAutheticationUrl()
         {
             Random random = new Random();
@@ -29,26 +29,26 @@ namespace TwitterApi.Controllers
             return Ok(url);
         }
 
-        [HttpPost("AccessToken")]
+        [HttpPost("AccessTokenV2")]
         public IActionResult AccessToken(string code, string challenge)
         {
             return Ok(twitterApi.AccessTokenV2(code, challenge));
         }
 
-        [HttpPost("RefreshToken")]
+        [HttpPost("RefreshTokenV2")]
         public async Task<IActionResult> RefreshToken(string refreshToken)
         {
             return Ok(await twitterApi.RefreshTokenV2(refreshToken));
         }
 
-        [HttpGet("GetCurrentUser")]
+        [HttpGet("GetCurrentUserV2")]
         public async Task<IActionResult> GetCurrentUser(string accessToken)
         {
             var user = await twitterApi.GetUserInfoV2(accessToken);
             return Ok(user);
         }
 
-        [HttpGet("GetUserById")]
+        [HttpGet("GetUserByIdV2")]
         public async Task<IActionResult> GetCurrentUser(string accessToken, string id)
         {
             var user = await twitterApi.GetUserByIdV2(accessToken, id);
@@ -165,16 +165,9 @@ namespace TwitterApi.Controllers
         public async Task<IActionResult> GetAutheticationUrlV1()
         {
             var res = await twitterApi.ConnectV1();
-            return Ok(res);
+            return Ok(res.Item1);
         }
 
-        [HttpPost("CallBack")]
-        public async Task<IActionResult> CallBack(string oauth_token, string oauth_verifier)
-        {
-            Console.WriteLine($"oauth_token:{oauth_token},oauth_verifier:{oauth_verifier}");
-            var result = await twitterApi.GetAccessToken(oauth_token, oauth_verifier);
-            return Ok(result);
-        }
         [HttpGet("CallBack")]
         public async Task<IActionResult> CallBackGet(string oauth_token, string oauth_verifier)
         {
